@@ -107,7 +107,14 @@ project's own database to survive restarts and run more than one replica.
 | Formatting | `{{money .Cost}}` `{{num .Tokens}}` `{{pct .Used .Limit}}` `{{date .At}}` `{{ago .At}}` `{{truncate 20 .Name}}` |
 | Toasts | `adminkit.toast(msg, 'success'\|'danger'\|'warning'\|'info')` |
 | JSON calls | `adminkit.post(url, body, okMessage)` `adminkit.get(url)` `adminkit.del(url, okMessage)` |
+| Modals | `adminkit.modal('dlgId').show()` / `.hide()` |
 | Confirm first | `data-ak-confirm="Revoke this key?"` on any clickable element |
+
+Note on the Bootstrap global: Tabler's bundle publishes its components on
+`window.tabler`, not `window.bootstrap`, so `new bootstrap.Modal(el)` copied
+from the docs would throw. The kit resolves whichever namespace is present and
+publishes it as `bootstrap`, so documentation snippets work verbatim.
+`adminkit.modal()` is the shorter way to the same thing.
 
 Everything else - cards, tables, modals, forms, badges, dropdowns - is Tabler's,
 used exactly as its documentation shows.

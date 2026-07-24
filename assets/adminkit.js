@@ -7,6 +7,25 @@
 
   var TOASTS = 'adminkit-toasts'
 
+  // Tabler's bundle publishes Bootstrap's components on `window.tabler`, not on
+  // `window.bootstrap`: its UMD footer reads `t.Modal=…, t.bootstrap=…` with `t`
+  // being the `tabler` global. Every Bootstrap and Tabler example, though, says
+  // `new bootstrap.Modal(el)` - and pasting those examples verbatim is the whole
+  // point of the kit. So resolve whichever namespace is really there and publish
+  // it as `bootstrap` when nothing else has.
+  var bs = [window.bootstrap, window.tabler && window.tabler.bootstrap, window.tabler]
+    .find(function (ns) { return ns && ns.Modal })
+  if (bs && !window.bootstrap) window.bootstrap = bs
+
+  // modal returns the Bootstrap modal for an element or element id, creating it
+  // on first use. Prefer it over touching the global directly.
+  function modal(target) {
+    var el = typeof target === 'string' ? document.getElementById(target) : target
+    if (!el) throw new Error('adminkit.modal: no such element: ' + target)
+    if (!bs) throw new Error('adminkit.modal: Bootstrap is not loaded')
+    return bs.Modal.getOrCreateInstance(el)
+  }
+
   // toast reports an outcome in the bottom-right corner. kind is
   // 'success' | 'danger' | 'warning' | 'info' (a Bootstrap colour).
   function toast(message, kind) {
@@ -44,8 +63,8 @@
 
     // Tabler bundles Bootstrap's JS; fall back to a plain timeout if a panel
     // ever loads this file without it.
-    if (window.bootstrap && window.bootstrap.Toast) {
-      var t = new window.bootstrap.Toast(el, { delay: 4000 })
+    if (bs && bs.Toast) {
+      var t = new bs.Toast(el, { delay: 4000 })
       el.addEventListener('hidden.bs.toast', function () { el.remove() })
       t.show()
     } else {
@@ -114,14 +133,16 @@
 
   // Tooltips are opt-in in Bootstrap; the layout's theme switcher uses them.
   document.addEventListener('DOMContentLoaded', function () {
-    if (!window.bootstrap || !window.bootstrap.Tooltip) return
+    if (!bs || !bs.Tooltip) return
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
-      new window.bootstrap.Tooltip(el)
+      new bs.Tooltip(el)
     })
   })
 
   window.adminkit = {
     toast: toast,
+    modal: modal,
+    bootstrap: bs,
     request: request,
     submit: submit,
     errorMessage: errorMessage,

@@ -15,7 +15,11 @@
   <div class="card-header">
     <h3 class="card-title">{{icon "key"}}<span class="ms-2">API keys</span></h3>
     <div class="card-actions">
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-key">
+      <!-- Opened from script rather than data-bs-toggle, so the style guide
+           exercises adminkit.modal(): the attribute path works through
+           Bootstrap's own delegation even when the global is missing, and would
+           hide a broken programmatic path. -->
+      <button class="btn btn-primary" id="createKeyBtn">
         {{icon "plus"}}<span class="ms-1">Create key</span>
       </button>
     </div>
@@ -95,12 +99,15 @@
 
 {{define "scripts"}}
 <script>
+  document.getElementById('createKeyBtn').onclick = () => adminkit.modal('create-key').show()
+
   // Wired to the example's own endpoint, to show the kit's request helpers.
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-demo]')
     if (!btn) return
     var what = btn.dataset.demo
     adminkit.post('/admin/demo', { what: what }, what === 'create' ? 'Key created' : 'Key revoked')
+      .then(function (res) { if (res.ok && what === 'create') adminkit.modal('create-key').hide() })
   })
 </script>
 {{end}}
