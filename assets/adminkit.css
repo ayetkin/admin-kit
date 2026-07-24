@@ -10,6 +10,23 @@
   vertical-align: -0.125em;
 }
 
+/* Toasts sit under the top right corner, clear of the sticky navbar rather than
+   over the user menu. The z-index puts them above a modal (1055), since a toast
+   often reports the outcome of what the modal just submitted. */
+#adminkit-toasts {
+  position: fixed;
+  top: 4.5rem;
+  right: 1rem;
+  z-index: 1090;
+}
+
+/* While a row menu is open, its scrollable table stops clipping so the menu can
+   extend past the table's edge. adminkit.js adds and removes the class around
+   the dropdown's own show/hidden events. */
+.table-responsive.ak-dropdown-open {
+  overflow: visible;
+}
+
 /* Usage meter: a budget/quota fill bar, which Tabler's progress component is
    too tall for inside a table cell. Colour follows how full it is. */
 .ak-meter {

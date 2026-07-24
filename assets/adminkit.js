@@ -119,6 +119,24 @@
     return 'Request failed'
   }
 
+  // A dropdown inside a scrollable table is clipped by it: Tabler's
+  // .table-responsive sets overflow-x, so a row menu is cut off at the table's
+  // edge - the last row loses most of its menu.
+  //
+  // The clipping is lifted only while a menu is open, and put back afterwards.
+  // Configuring Popper to position against the viewport would be the other way
+  // out, but Tabler instantiates every dropdown at load, so there is no moment
+  // at which the kit could supply that configuration.
+  var OPEN = 'ak-dropdown-open'
+  document.addEventListener('show.bs.dropdown', function (e) {
+    var scroller = e.target.closest('.table-responsive')
+    if (scroller) scroller.classList.add(OPEN)
+  })
+  document.addEventListener('hidden.bs.dropdown', function (e) {
+    var scroller = e.target.closest('.table-responsive')
+    if (scroller) scroller.classList.remove(OPEN)
+  })
+
   // confirm wires up any element carrying data-ak-confirm so a destructive
   // action asks first. It is applied on click, capture phase, so the page's own
   // handler never runs when the operator backs out.
