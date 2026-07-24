@@ -1,0 +1,4 @@
+@tabler/core          1.4.0
+@tabler/icons-webfont 3.45.0
+
+Both MIT licensed. Fetched by scripts/vendor-tabler.sh; do not edit by hand.

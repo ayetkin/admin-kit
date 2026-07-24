@@ -1,0 +1,54 @@
+{{/*
+  Sign-in page, rendered by Kit.RenderLogin. Its data is a LoginData, not the
+  usual PageData: there is no navigation or user menu to draw yet.
+*/}}
+{{define "login.html"}}<!doctype html>
+<html lang="en" data-bs-theme="{{.Theme}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sign in · {{.Brand}}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>✨</text></svg>">
+  <link rel="stylesheet" href="{{asset "vendor/tabler/tabler.min.css"}}">
+  <link rel="stylesheet" href="{{asset "vendor/tabler/tabler-icons.min.css"}}">
+  <link rel="stylesheet" href="{{asset "adminkit.css"}}">
+</head>
+<body class="d-flex flex-column">
+<script src="{{asset "adminkit-theme.js"}}"></script>
+<div class="page page-center">
+  <div class="container container-tight py-4">
+    <div class="text-center mb-4">
+      <span class="navbar-brand navbar-brand-autodark fs-2">{{.Brand}}</span>
+    </div>
+    <div class="card card-md">
+      <div class="card-body">
+        <h2 class="h3 text-center mb-4">Operator sign-in</h2>
+        {{with .Error}}
+        <div class="alert alert-danger" role="alert">
+          <div class="d-flex">
+            <div>{{icon "alert-triangle"}}</div>
+            <div class="ms-2">{{.}}</div>
+          </div>
+        </div>
+        {{end}}
+        {{if .SignInHref}}
+        <p class="text-secondary text-center mb-4">
+          This panel is restricted{{with .DomainHint}} to {{.}}{{end}}.
+        </p>
+        <div class="text-center">
+          <a href="{{.SignInHref}}" class="btn btn-primary w-100">
+            {{icon "brand-google"}}<span class="ms-2">Sign in with Google</span>
+          </a>
+        </div>
+        {{else}}
+        <p class="text-secondary text-center mb-0">
+          Sign-in is not configured, so this panel cannot be opened. Set the
+          Google OAuth credentials and public host, then reload.
+        </p>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>{{end}}

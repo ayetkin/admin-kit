@@ -1,0 +1,64 @@
+/* adminkit: the thin layer on top of Tabler.
+ *
+ * Everything here is either something Tabler has no opinion about (the usage
+ * meter) or a small correction. Resist growing this file: if a panel needs a
+ * new look, first check whether Tabler already ships the component. */
+
+/* Icons rendered by the `icon` template function sit slightly high next to
+   text at the default line height. */
+.ti {
+  vertical-align: -0.125em;
+}
+
+/* Usage meter: a budget/quota fill bar, which Tabler's progress component is
+   too tall for inside a table cell. Colour follows how full it is. */
+.ak-meter {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 58px;
+  height: 5px;
+  overflow: hidden;
+  vertical-align: middle;
+  background: var(--tblr-border-color);
+  border-radius: 999px;
+}
+
+.ak-meter-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--tblr-primary);
+  border-radius: 999px;
+  transition: width 0.2s;
+}
+
+.ak-meter-fill.is-near {
+  background: var(--tblr-warning);
+}
+
+.ak-meter-fill.is-over {
+  background: var(--tblr-danger);
+}
+
+/* A secret shown once (a freshly minted key): monospace, wrapping, and clearly
+   not a normal field. */
+.ak-secret {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--tblr-font-monospace);
+  font-size: 0.8125rem;
+  color: var(--tblr-green);
+  word-break: break-all;
+  background: var(--tblr-bg-surface-tertiary);
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius);
+}
+
+/* Table cells holding an amount or a count read better aligned and tabular, so
+   digits line up between rows. */
+.ak-num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

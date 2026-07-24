@@ -1,0 +1,27 @@
+{{/*
+  Status pill: one labelled health indicator with a coloured dot, the row of
+  them a panel usually shows at the top.
+
+    <div class="row row-cards">
+      {{template "pill" dict "label" "Session" "state" "ok" "value" "Active" "icon" "shield"}}
+    </div>
+
+  state is "ok" | "warn" | "bad" | "" (unknown, grey). Give the element an id
+  through "id" to update it later from JavaScript.
+*/}}
+{{define "pill"}}
+<div class="col-sm-6 col-lg-4">
+  <div class="card card-sm">
+    <div class="card-body">
+      <div class="text-secondary text-uppercase small fw-medium mb-1">
+        {{with .icon}}{{icon .}} {{end}}{{.label}}
+      </div>
+      <div class="d-flex align-items-center gap-2 fw-semibold"{{with .id}} id="{{.}}"{{end}}>
+        <span class="status-dot{{if eq .state "ok"}} status-dot-animated bg-green
+          {{- else if eq .state "warn"}} bg-yellow{{else if eq .state "bad"}} bg-red{{else}} bg-secondary{{end}}"></span>
+        <span>{{.value}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

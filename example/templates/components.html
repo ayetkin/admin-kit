@@ -1,0 +1,116 @@
+{{/* Reference page: what the kit adds on top of Tabler, and how to call it. */}}
+{{define "content"}}
+<div class="page-header d-print-none mb-3">
+  <h2 class="page-title">Components</h2>
+  <div class="text-secondary mt-1">
+    Tabler covers the usual widgets; these are the pieces the kit adds.
+    See <a href="https://tabler.io/docs" target="_blank" rel="noopener">tabler.io/docs</a> for the rest.
+  </div>
+</div>
+
+<div class="row row-cards">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Usage meter</h3></div>
+      <div class="card-body">
+        <p class="text-secondary">
+          <code>{{`{{template "meter" dict "used" .Spent "limit" .Limit}}`}}</code>
+        </p>
+        <div class="d-flex flex-column gap-2">
+          {{range $u := (list 0.0 0.05 4.0 8.2 12.0)}}
+          <div class="d-flex align-items-center gap-2">
+            {{template "meter" dict "used" $u "limit" 10.0}}
+            <span class="text-secondary small">{{money $u}} of {{money 10.0}} · {{pct $u 10.0}}</span>
+          </div>
+          {{end}}
+          <div class="d-flex align-items-center gap-2">
+            {{template "meter" dict "used" 4.0 "limit" 0.0}}
+            <span class="text-secondary small">no limit: nothing is drawn</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Toasts</h3></div>
+      <div class="card-body">
+        <p class="text-secondary"><code>adminkit.toast(message, kind)</code></p>
+        <div class="btn-list">
+          <button class="btn btn-success" data-toast="success">Success</button>
+          <button class="btn btn-danger" data-toast="danger">Danger</button>
+          <button class="btn btn-warning" data-toast="warning">Warning</button>
+          <button class="btn" data-toast="info">Info</button>
+        </div>
+        <hr>
+        <p class="text-secondary"><code>adminkit.post(url, body, okMessage)</code></p>
+        <div class="btn-list">
+          <button class="btn btn-primary" data-req="ok">Request that succeeds</button>
+          <button class="btn btn-ghost-danger" data-req="fail">Request that fails</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Confirm before acting</h3></div>
+      <div class="card-body">
+        <p class="text-secondary"><code>data-ak-confirm="Are you sure?"</code> on any clickable element.</p>
+        <button class="btn btn-ghost-danger" data-ak-confirm="Delete everything?" data-toast="danger">
+          {{icon "trash"}}<span class="ms-1">Destructive action</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Empty state &amp; secret</h3></div>
+      <div class="card-body">
+        {{template "empty" dict "title" "No keys yet" "icon" "key" "subtitle" "Create one to get started."}}
+        <p class="text-secondary mt-3"><code>.ak-secret</code>, for a value shown once:</p>
+        <code class="ak-secret">fnk-6f1c2d0a9b8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a3928170</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Formatting helpers</h3></div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead><tr><th>Call</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td><code>{{`{{money 0.0042}}`}}</code></td><td>{{money 0.0042}}</td></tr>
+            <tr><td><code>{{`{{money 12.5}}`}}</code></td><td>{{money 12.5}}</td></tr>
+            <tr><td><code>{{`{{num 1240000}}`}}</code></td><td>{{num 1240000}}</td></tr>
+            <tr><td><code>{{`{{pct 7.9 10.0}}`}}</code></td><td>{{pct 7.9 10.0}}</td></tr>
+            <tr><td><code>{{`{{truncate 12 "a rather long value"}}`}}</code></td><td>{{truncate 12 "a rather long value"}}</td></tr>
+            <tr><td><code>{{`{{initials "Ada Lovelace"}}`}}</code></td><td>{{initials "Ada Lovelace"}}</td></tr>
+            <tr><td><code>{{`{{icon "key"}}`}}</code></td><td>{{icon "key"}} <span class="text-secondary">any name from tabler.io/icons</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-toast]')
+    if (t) {
+      adminkit.toast('This is a ' + t.dataset.toast + ' toast.', t.dataset.toast)
+      return
+    }
+    var r = e.target.closest('[data-req]')
+    if (r) {
+      var url = '/admin/demo' + (r.dataset.req === 'fail' ? '?fail=1' : '')
+      adminkit.post(url, { demo: true }, 'The server accepted it')
+    }
+  })
+</script>
+{{end}}

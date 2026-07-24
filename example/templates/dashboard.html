@@ -1,0 +1,106 @@
+{{/* A page is plain Tabler HTML inside a "content" block. */}}
+{{define "content"}}
+<div class="page-header d-print-none mb-3">
+  <h2 class="page-title">Dashboard</h2>
+  <div class="text-secondary mt-1">Everything below is ordinary Tabler markup; the shell comes from the kit.</div>
+</div>
+
+<div class="row row-cards mb-3">
+  {{range .Data.Pills}}
+    {{template "pill" dict "label" .label "value" .value "state" .state "icon" .icon}}
+  {{end}}
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{icon "key"}}<span class="ms-2">API keys</span></h3>
+    <div class="card-actions">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-key">
+        {{icon "plus"}}<span class="ms-1">Create key</span>
+      </button>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table">
+      <thead>
+        <tr>
+          <th>Name</th><th>Key</th><th>Created</th><th>Last used</th>
+          <th class="ak-num">Tokens</th><th>Spending</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Data.Keys}}
+        <tr>
+          <td>{{.Name}}</td>
+          <td><code class="text-secondary">{{.Prefix}}</code></td>
+          <td class="text-secondary">{{date .CreatedAt}}</td>
+          <td class="text-secondary">{{ago .LastUsedAt}}</td>
+          <td class="ak-num">{{num .Tokens}}</td>
+          <td>
+            <span class="d-inline-flex align-items-center gap-2">
+              {{template "meter" dict "used" .Spent "limit" .Limit}}
+              <span class="text-secondary small">
+                {{money .Spent}}{{if gt .Limit 0.0}} / {{money .Limit}}{{end}}
+              </span>
+            </span>
+          </td>
+          <td>
+            {{if .Revoked}}
+              <span class="badge bg-red-lt">revoked</span>
+            {{else if and (gt .Limit 0.0) (ge .Spent .Limit)}}
+              <span class="badge bg-yellow-lt">limit reached</span>
+            {{else}}
+              <span class="badge bg-green-lt">active</span>
+            {{end}}
+          </td>
+          <td class="text-end">
+            {{if not .Revoked}}
+            <button class="btn btn-ghost-danger btn-sm"
+                    data-ak-confirm="Revoke {{.Name}}? Anything using it stops working."
+                    data-demo="revoke">{{icon "ban"}}<span class="ms-1">Revoke</span></button>
+            {{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal modal-blur fade" id="create-key" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create API key</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-control" placeholder="e.g. backoffice">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Monthly limit (USD)</label>
+          <input type="number" class="form-control" min="0" step="any" placeholder="∞">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" data-demo="create">{{icon "plus"}}<span class="ms-1">Create</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+  // Wired to the example's own endpoint, to show the kit's request helpers.
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-demo]')
+    if (!btn) return
+    var what = btn.dataset.demo
+    adminkit.post('/admin/demo', { what: what }, what === 'create' ? 'Key created' : 'Key revoked')
+  })
+</script>
+{{end}}

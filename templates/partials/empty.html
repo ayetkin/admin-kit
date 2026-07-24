@@ -1,0 +1,15 @@
+{{/*
+  Empty state for a table or list that has nothing in it yet.
+
+    {{template "empty" dict "title" "No API keys yet" "icon" "key"
+       "subtitle" "Create one to get started."}}
+
+  Every key is optional but "title".
+*/}}
+{{define "empty"}}
+<div class="empty">
+  {{with .icon}}<div class="empty-icon">{{icon .}}</div>{{end}}
+  <p class="empty-title">{{.title}}</p>
+  {{with .subtitle}}<p class="empty-subtitle text-secondary">{{.}}</p>{{end}}
+</div>
+{{end}}
