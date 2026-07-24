@@ -272,7 +272,7 @@ func TestDomainAllowed(t *testing.T) {
 	}
 	cases := map[string]bool{
 		"ada@example.com":      true,
-		"ada@second.test":   true, // domains compare case-insensitively
+		"ada@second.test":      true, // domains compare case-insensitively
 		"ada@EXAMPLE.COM":      true,
 		"ada@evil.com":         false,
 		"ada@sub.example.com":  false, // a subdomain is a different domain

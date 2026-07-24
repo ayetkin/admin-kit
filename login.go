@@ -14,7 +14,7 @@ type LoginData struct {
 	// SignInHref starts the sign-in flow. Empty means sign-in is unconfigured,
 	// and the page says so instead of offering a dead button.
 	SignInHref string
-	// DomainHint names who may sign in, e.g. "second.test". Optional.
+	// DomainHint names who may sign in, e.g. "example.com". Optional.
 	DomainHint string
 	// Error is a message to show above the button, e.g. after a rejected sign-in.
 	Error string
