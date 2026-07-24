@@ -49,11 +49,11 @@ func TestRenderWrapsPageInTheLayout(t *testing.T) {
 	body := get(t, k, "/admin", "dashboard.html", map[string]string{"Name": "one"})
 
 	for _, want := range []string{
-		`<title>Panel</title>`,                   // layout title from the brand
-		`data-bs-theme="dark"`,                   // default theme
-		`<p id="page">dashboard one</p>`,         // the page's own content block
-		`/adminkit/vendor/tabler/tabler.min.css`, // vendored assets
-		`id="adminkit-toasts"`,                   // toast host
+		`<title>Panel</title>`,            // layout title from the brand
+		`data-bs-theme="dark"`,            // default theme
+		`<p id="page">dashboard one</p>`,  // the page's own content block
+		`/adminkit/tabler/tabler.min.css`, // vendored assets
+		`id="adminkit-toasts"`,            // toast host
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("rendered page is missing %q", want)

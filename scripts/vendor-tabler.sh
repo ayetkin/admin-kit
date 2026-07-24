@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Vendor the Tabler dist files into assets/vendor/tabler.
+# Vendor the Tabler dist files into assets/tabler.
 #
 # The kit ships Tabler with the binary instead of loading it from a CDN, so an
 # admin panel keeps working offline and on an air-gapped network. Run this to
@@ -21,7 +21,7 @@ CORE_VERSION="${1:-1.4.0}"
 ICONS_VERSION="${2:-3.45.0}"
 
 cd "$(dirname "$0")/.."
-DEST="assets/vendor/tabler"
+DEST="assets/tabler"
 CDN="https://cdn.jsdelivr.net/npm"
 
 mkdir -p "$DEST/fonts"

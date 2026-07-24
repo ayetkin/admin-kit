@@ -114,7 +114,7 @@ used exactly as its documentation shows.
 
 ## Tabler
 
-Vendored under `assets/vendor/tabler` at the versions pinned in the Makefile.
+Vendored under `assets/tabler` at the versions pinned in the Makefile.
 To adopt a new release:
 
 ```bash

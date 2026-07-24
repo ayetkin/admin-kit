@@ -3,6 +3,7 @@ package adminkit
 import (
 	"compress/gzip"
 	"io"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,16 +11,41 @@ import (
 	"testing/fstest"
 )
 
+// The go command drops any directory named "vendor" when it packages a module,
+// so an asset filed under one is embedded here and missing for every project
+// that imports the kit - a 404 no other test in this repo would see, because
+// they all build from the source tree. Keep vendored files somewhere else.
+func TestNoAssetLivesUnderAVendorDirectory(t *testing.T) {
+	sub, err := fs.Sub(assetsFS, "assets")
+	if err != nil {
+		t.Fatalf("fs.Sub: %v", err)
+	}
+	err = fs.WalkDir(sub, ".", func(name string, _ fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		for _, part := range strings.Split(name, "/") {
+			if part == "vendor" {
+				t.Errorf("%s is under a vendor directory, so it will not ship in the module zip", name)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk assets: %v", err)
+	}
+}
+
 func TestMountServesVendoredAssets(t *testing.T) {
 	k := newTestKit(t, Config{})
 	mux := http.NewServeMux()
 	k.Mount(mux)
 
 	for _, name := range []string{
-		"/adminkit/vendor/tabler/tabler.min.css",
-		"/adminkit/vendor/tabler/tabler.min.js",
-		"/adminkit/vendor/tabler/tabler-icons.min.css",
-		"/adminkit/vendor/tabler/fonts/tabler-icons.woff2",
+		"/adminkit/tabler/tabler.min.css",
+		"/adminkit/tabler/tabler.min.js",
+		"/adminkit/tabler/tabler-icons.min.css",
+		"/adminkit/tabler/fonts/tabler-icons.woff2",
 		"/adminkit/adminkit.css",
 		"/adminkit/adminkit.js",
 		"/adminkit/adminkit-theme.js",
@@ -40,7 +66,7 @@ func TestAssetsAreServedGzippedWhenAccepted(t *testing.T) {
 	k := newTestKit(t, Config{})
 	mux := http.NewServeMux()
 	k.Mount(mux)
-	const name = "/adminkit/vendor/tabler/tabler.min.css"
+	const name = "/adminkit/tabler/tabler.min.css"
 
 	plain := httptest.NewRecorder()
 	mux.ServeHTTP(plain, httptest.NewRequest(http.MethodGet, name, nil))
@@ -87,7 +113,7 @@ func TestAlreadyCompressedAssetsAreNotGzipped(t *testing.T) {
 	mux := http.NewServeMux()
 	k.Mount(mux)
 
-	req := httptest.NewRequest(http.MethodGet, "/adminkit/vendor/tabler/fonts/tabler-icons.woff2", nil)
+	req := httptest.NewRequest(http.MethodGet, "/adminkit/tabler/fonts/tabler-icons.woff2", nil)
 	req.Header.Set("Accept-Encoding", "gzip")
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
@@ -136,7 +162,7 @@ func TestAssetPathIsConfigurable(t *testing.T) {
 
 	// Pages must reference the same prefix, or the panel loads no styling.
 	body := get(t, k, "/admin", "dashboard.html", map[string]string{})
-	if !strings.Contains(body, "/static/kit/vendor/tabler/tabler.min.css") {
+	if !strings.Contains(body, "/static/kit/tabler/tabler.min.css") {
 		t.Error("layout did not use the configured asset path")
 	}
 }
