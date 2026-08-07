@@ -27,6 +27,26 @@
   overflow: visible;
 }
 
+/* A modal in dark mode has no edge of its own: Tabler maps --tblr-modal-bg to
+   --tblr-bg-surface and the footer to --tblr-bg-surface-tertiary, and in dark
+   both land on gray-800 - the very colour of the cards the dialog opens over.
+   The backdrop does not separate them either, being gray-800 at 0.24. Light
+   mode gets the separation for free (a white sheet on a grey page), so this
+   gives dark the same three cues: a lifted sheet, a footer that still reads as
+   a footer, and a backdrop dark enough to sink the page behind it. */
+[data-bs-theme="dark"] .modal-content {
+  --tblr-modal-footer-bg: var(--tblr-bg-surface);
+  background-color: #2f3846; /* fallback for color-mix */
+  background-color: color-mix(in srgb, var(--tblr-bg-surface) 91%, #fff);
+  border-color: var(--tblr-border-color);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.6);
+}
+
+[data-bs-theme="dark"] .modal-backdrop {
+  --tblr-backdrop-bg: #000;
+  --tblr-backdrop-opacity: 0.6;
+}
+
 /* Usage meter: a budget/quota fill bar, which Tabler's progress component is
    too tall for inside a table cell. Colour follows how full it is. */
 .ak-meter {
