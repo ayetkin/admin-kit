@@ -1,0 +1,172 @@
+{{/* Patterns: the kit's components put together the way a real panel uses them. */}}
+{{define "content"}}
+{{$d := .Data}}
+<div class="page-header d-print-none mb-3">
+  <h2 class="page-title">Patterns</h2>
+  <div class="text-secondary mt-1">A list page, a settings form and a two-pane dialog, built from the kit's pieces.</div>
+</div>
+
+<div class="row row-cards mb-3">
+  <div class="col-sm-6 col-lg-3">
+    {{template "stat" dict "label" "Members" "value" (len $d.Members) "sub" "in this workspace" "icon" "users"}}
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    {{template "stat" dict "label" "Active" "value" $d.Active "unit" "members" "sub" "signed in this month" "icon" "user-check" "tone" "good"}}
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    {{template "stat" dict "label" "Inactive" "value" $d.Inactive "sub" "no sign-in for 30 days" "icon" "user-off" "tone" "warn"}}
+  </div>
+  <div class="col-sm-6 col-lg-3" id="live-tile" data-ak-live>
+    {{template "stat" dict "label" "Server time" "value" $d.Now "sub" "adminkit.refresh() redraws this" "icon" "clock"}}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header ak-toolbar">
+    <div class="input-icon">
+      <span class="input-icon-addon">{{icon "search"}}</span>
+      <input class="form-control" id="m-q" placeholder="Search members" autocomplete="off">
+    </div>
+    <div class="btn-group ak-filter" role="group" aria-label="Filter members">
+      <input type="radio" class="btn-check" name="mf" id="mf-all" value="" checked>
+      <label class="btn" for="mf-all">All <span class="badge">{{len $d.Members}}</span></label>
+      <input type="radio" class="btn-check" name="mf" id="mf-on" value="on">
+      <label class="btn" for="mf-on">Active <span class="badge">{{$d.Active}}</span></label>
+      <input type="radio" class="btn-check" name="mf" id="mf-off" value="off">
+      <label class="btn" for="mf-off">Inactive <span class="badge">{{$d.Inactive}}</span></label>
+    </div>
+    <button class="btn" id="btn-refresh">{{icon "refresh"}}<span>Refresh</span></button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table">
+      <thead><tr><th>Member</th><th>Role</th><th>Last seen</th><th class="w-1"></th></tr></thead>
+      <tbody id="m-rows">
+        {{range $d.Members}}
+        <tr data-search="{{.Name}} {{.Email}} {{.Role}}" data-state="{{if .Active}}on{{else}}off{{end}}">
+          <td>{{template "ident" dict "name" .Name "sub" .Email}}</td>
+          <td class="text-secondary">{{.Role}}</td>
+          <td class="text-secondary">{{agoLive .LastSeen}}</td>
+          <td class="text-end"><div class="ak-actions">
+            <button class="ak-act" title="Copy email" data-bs-toggle="tooltip" data-ak-copy="{{.Email}}">{{icon "copy"}}</button>
+            <button class="ak-act" title="Edit" data-bs-toggle="modal" data-bs-target="#dlg-member">{{icon "pencil"}}</button>
+            <button class="ak-act is-danger" title="Remove" data-bs-toggle="tooltip"
+                    data-ak-confirm="Remove {{.Name}} from the workspace?">{{icon "trash"}}</button>
+          </div></td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer">{{template "pager" dict "id" "m-pager"}}</div>
+</div>
+
+<div class="row row-cards">
+  <div class="col-lg-7">
+    <form class="card" id="settings" action="/admin/demo/settings" data-ak-form data-ak-ok="Settings saved" novalidate>
+      <div class="ak-setting-group">
+        <div class="ak-section">{{icon "settings"}}General</div>
+        <div class="ak-srow">
+          <div class="ak-srow-label"><label for="s-name">Panel name</label>
+            <div class="ak-srow-desc">Shown in the navigation and on the sign-in page.</div></div>
+          <div class="ak-srow-ctl"><input class="form-control" id="s-name" name="name" value="admin-kit"></div>
+        </div>
+        <div class="ak-srow">
+          <div class="ak-srow-label"><label for="s-port">Port</label>
+            <div class="ak-srow-desc">Clear it and save to see the field errors.</div></div>
+          <div class="ak-srow-ctl is-narrow"><input class="form-control" type="number" id="s-port" name="port" value="8099"></div>
+        </div>
+        <div class="ak-srow">
+          <div class="ak-srow-label"><label for="s-notify">Email alerts</label>
+            <div class="ak-srow-desc">A lone checkbox is sent as true or false.</div></div>
+          <div class="ak-srow-ctl is-switch"><label class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="s-notify" name="notify" checked></label></div>
+        </div>
+      </div>
+      <div class="ak-setting-group">
+        <div class="ak-section">{{icon "webhook"}}Integrations</div>
+        <div class="ak-srow">
+          <div class="ak-srow-label"><label for="s-hook">Webhook</label>
+            <div class="ak-srow-desc">Must be https://.</div></div>
+          <div class="ak-srow-ctl"><input class="form-control" id="s-hook" name="webhook" placeholder="https://"></div>
+        </div>
+        <div class="ak-srow">
+          <div class="ak-srow-label"><label>Signing secret</label>
+            <div class="ak-srow-desc">A read-only value with a copy button.</div></div>
+          <div class="ak-srow-ctl"><div class="input-group ak-copyfield">
+            <input class="form-control" id="s-secret" value="whsec_9f8e7d6c5b4a3928170" readonly>
+            <button type="button" class="btn btn-icon" title="Copy" data-ak-copy-target="#s-secret">{{icon "copy"}}</button>
+          </div></div>
+        </div>
+      </div>
+      <div class="card-footer ak-savebar">
+        <span class="text-secondary small">Sent with <code>data-ak-form</code>; the server answers field errors.</span>
+        <button type="submit" class="btn btn-primary ms-auto">{{icon "device-floppy"}}<span>Save</span></button>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Two-pane dialog</h3></div>
+      <div class="card-body">
+        <p class="text-secondary"><code>.ak-split</code> with an <code>.ak-pane</code> and an <code>.ak-side</code> helper pane.</p>
+        <button class="btn" data-bs-toggle="modal" data-bs-target="#dlg-member">{{icon "user-plus"}}<span>Open the dialog</span></button>
+        <p class="text-secondary mt-3 mb-0">This page was rendered {{agoLive $d.Since}}; leave it open and the time keeps up.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-blur fade" id="dlg-member" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Invite a member</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body p-0">
+        <div class="ak-split">
+          <div class="ak-pane">
+            <div class="ak-section">{{icon "user"}}Who</div>
+            <div class="mb-3"><label class="form-label">Email</label><input class="form-control" placeholder="name@example.com"></div>
+            <div><label class="form-label">Role</label><select class="form-select"><option>Viewer</option><option>Editor</option><option>Admin</option></select></div>
+          </div>
+          <div class="ak-pane ak-side">
+            <div class="ak-section">{{icon "info-circle"}}Roles</div>
+            <p class="text-secondary small mb-2"><b>Viewer</b> reads everything.</p>
+            <p class="text-secondary small mb-2"><b>Editor</b> also changes settings.</p>
+            <p class="text-secondary small mb-0"><b>Admin</b> also manages members.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" data-bs-dismiss="modal">{{icon "send"}}<span>Invite</span></button></div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+  (function () {
+    var rows = document.querySelectorAll('#m-rows tr')
+    var q = document.getElementById('m-q')
+    var state = { page: 1, size: 10 }
+    function draw() {
+      var want = (document.querySelector('[name="mf"]:checked') || {}).value
+      state.page = adminkit.filterRows(rows, q.value, {
+        page: state.page, size: state.size, pager: 'm-pager',
+        keep: function (tr) { return !want || tr.dataset.state === want }
+      }).page
+    }
+    q.addEventListener('input', adminkit.debounce(function () { state.page = 1; draw() }, 150))
+    adminkit.on('change', '[name="mf"]', function () { state.page = 1; draw() })
+    adminkit.on('click', '#m-pager [data-ak-pager-prev]', function () { state.page--; draw() })
+    adminkit.on('click', '#m-pager [data-ak-pager-next]', function () { state.page++; draw() })
+    document.getElementById('btn-refresh').addEventListener('click', function () {
+      adminkit.busy(this, adminkit.refresh({ delay: 400 }))
+    })
+    document.addEventListener('ak:sent', function (e) {
+      if (e.target.id === 'settings') console.log('saved', e.detail)
+    })
+    draw()
+  })()
+</script>
+{{end}}

@@ -16,11 +16,13 @@ import (
 func builtinFuncs(cfg Config) template.FuncMap {
 	return template.FuncMap{
 		"asset": func(name string) string {
-			return cfg.AssetPath + "/" + strings.TrimPrefix(name, "/")
+			name = strings.TrimPrefix(name, "/")
+			return cfg.AssetPath + "/" + name + assetVersion(name)
 		},
 		"date":       formatDate,
 		"datetime":   formatDateTime,
 		"ago":        formatAgo,
+		"agoLive":    agoLive,
 		"money":      formatMoney,
 		"num":        formatNum,
 		"pct":        formatPct,
@@ -55,6 +57,18 @@ func formatDateTime(ms int64) string {
 
 // formatAgo renders a unix-millis timestamp as a coarse age ("3d ago"). It is
 // deliberately imprecise: a table wants a glance, not a stopwatch.
+// agoLive is ago for a page left open: a <time> element whose text adminkit.js
+// brings up to date every half minute, so "2m ago" does not stay "2m ago".
+// Its tooltip carries the exact time.
+func agoLive(ms int64) template.HTML {
+	if ms == 0 {
+		return template.HTML(formatAgo(ms))
+	}
+	at := time.UnixMilli(ms)
+	return template.HTML(fmt.Sprintf(`<time datetime="%s" data-ak-ago="%d" title="%s">%s</time>`,
+		at.UTC().Format(time.RFC3339), ms, template.HTMLEscapeString(formatDateTime(ms)), formatAgo(ms)))
+}
+
 func formatAgo(ms int64) string {
 	if ms == 0 {
 		return "never"
@@ -178,15 +192,6 @@ func initials(name string) string {
 		out += string([]rune(fields[len(fields)-1])[:1])
 	}
 	return strings.ToUpper(out)
-}
-
-// icon renders a Tabler icon by name, e.g. {{icon "key"}}. See tabler.io/icons.
-func icon(name string) template.HTML {
-	name = strings.TrimPrefix(strings.TrimSpace(name), "ti-")
-	if name == "" {
-		return ""
-	}
-	return template.HTML(`<i class="ti ti-` + template.HTMLEscapeString(name) + `"></i>`)
 }
 
 // truncate shortens s to at most n runes, appending an ellipsis. It cuts on a

@@ -1,0 +1,19 @@
+{{/*
+  Identity cell: a picture (or the name's initials) beside a name and a
+  muted line under it, the first column of most lists.
+
+    <td>{{template "ident" dict "name" .Name "sub" .Email "logo" .AvatarURL}}</td>
+
+  Every key is optional but "name". Without "logo" the avatar shows the
+  name's initials.
+*/}}
+{{define "ident"}}
+<div class="ak-ident">
+  {{if .logo}}<span class="avatar" style="background-image: url({{.logo}})"></span>
+  {{else}}<span class="avatar">{{initials .name}}</span>{{end}}
+  <div class="ak-min-w-0">
+    <div class="ak-ident-name text-truncate">{{.name}}</div>
+    {{with .sub}}<div class="ak-ident-sub text-truncate">{{.}}</div>{{end}}
+  </div>
+</div>
+{{end}}

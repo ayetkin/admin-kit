@@ -10,9 +10,12 @@ package main
 import (
 	"context"
 	"embed"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	adminkit "github.com/ayetkin/admin-kit"
@@ -47,6 +50,7 @@ func main() {
 		Nav: []adminkit.NavItem{
 			{Label: "Dashboard", Href: "/admin", Icon: "home"},
 			{Label: "Components", Href: "/admin/components", Icon: "components"},
+			{Label: "Patterns", Href: "/admin/patterns", Icon: "layout-grid"},
 		},
 		CurrentUser: func(r *http.Request) *adminkit.User { return a.CurrentUser(r) },
 	})
@@ -72,6 +76,8 @@ func main() {
 	mux.Handle("GET /admin", a.RequirePage(kit.Page("dashboard.html", dashboardData)))
 	mux.Handle("GET /admin/components", a.RequirePage(kit.Page("components.html", nil)))
 	mux.Handle("POST /admin/demo", a.RequireAPI(http.HandlerFunc(demo)))
+	mux.Handle("GET /admin/patterns", a.RequirePage(kit.Page("patterns.html", patternsData)))
+	mux.Handle("POST /admin/demo/settings", a.RequireAPI(http.HandlerFunc(demoSettings)))
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/admin", http.StatusFound)
 	})
@@ -119,9 +125,86 @@ func dashboardData(*http.Request) any {
 // helpers can be exercised end to end.
 func demo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	if r.URL.Query().Get("slow") != "" {
+		time.Sleep(1500 * time.Millisecond) // long enough to see adminkit.busy hold the button
+	}
 	if r.URL.Query().Get("fail") != "" {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte(`{"error":"the server refused this one, on purpose"}`))
+		return
+	}
+	_, _ = w.Write([]byte(`{"ok":true}`))
+}
+
+// member is a stand-in row for the Patterns page's list.
+type member struct {
+	ID       int
+	Name     string
+	Email    string
+	Role     string
+	Active   bool
+	LastSeen int64
+}
+
+var firstNames = []string{"Ada", "Alan", "Grace", "Linus", "Margaret", "Ken", "Barbara", "Dennis", "Radia", "Edsger", "Frances", "John"}
+var lastNames = []string{"Lovelace", "Turing", "Hopper", "Torvalds", "Hamilton", "Thompson", "Liskov", "Ritchie", "Perlman", "Dijkstra", "Allen", "Backus"}
+
+func patternsData(*http.Request) any {
+	now := time.Now()
+	var members []member
+	active := 0
+	for i := 0; i < 37; i++ {
+		f, l := firstNames[i%len(firstNames)], lastNames[(i*5)%len(lastNames)]
+		m := member{
+			ID:       i + 1,
+			Name:     f + " " + l,
+			Email:    strings.ToLower(f+"."+l) + "@example.com",
+			Role:     []string{"Admin", "Editor", "Viewer"}[i%3],
+			Active:   i%4 != 3,
+			LastSeen: now.Add(-time.Duration(i*i*7) * time.Minute).UnixMilli(),
+		}
+		if m.Active {
+			active++
+		}
+		members = append(members, m)
+	}
+	return map[string]any{
+		"Members":  members,
+		"Active":   active,
+		"Inactive": len(members) - active,
+		"Now":      now.Format("15:04:05"),
+		"Since":    now.Add(-90 * time.Second).UnixMilli(),
+	}
+}
+
+// demoSettings checks the Patterns page's settings form the way a real API
+// would, answering field errors as {error, errors: {field: message}}.
+func demoSettings(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Name    string `json:"name"`
+		Port    *int   `json:"port"`
+		Webhook string `json:"webhook"`
+		Notify  bool   `json:"notify"`
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":"not JSON"}`))
+		return
+	}
+	errs := map[string]string{}
+	if strings.TrimSpace(body.Name) == "" {
+		errs["name"] = "Give the panel a name."
+	}
+	if body.Port == nil || *body.Port < 1 || *body.Port > 65535 {
+		errs["port"] = "A port is a number from 1 to 65535."
+	}
+	if body.Webhook != "" && !strings.HasPrefix(body.Webhook, "https://") {
+		errs["webhook"] = "Use an https:// address."
+	}
+	if len(errs) > 0 {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		_ = json.NewEncoder(w).Encode(map[string]any{"error": fmt.Sprintf("%d fields need a fix", len(errs)), "errors": errs})
 		return
 	}
 	_, _ = w.Write([]byte(`{"ok":true}`))

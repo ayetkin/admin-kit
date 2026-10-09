@@ -1,0 +1,28 @@
+{{/*
+  Stat tile: one figure on a dashboard, with its label above and a line of
+  context under it.
+
+    <div class="row row-cards">
+      <div class="col-sm-6 col-lg-3">
+        {{template "stat" dict "label" "Active keys" "value" (num .Active) "unit" "keys"
+           "sub" "3 created this week" "icon" "key" "tone" "good"}}
+      </div>
+    </div>
+
+  Every key is optional but "label" and "value". unit follows the figure in a
+  smaller size; tone colours the figure: "good" | "warn" | "bad". Give it an
+  id through "id" to update the figure from JavaScript (the element with that
+  id is the figure; its sub line is id + "-sub").
+*/}}
+{{define "stat"}}
+<div class="card ak-stat">
+  <div class="card-body">
+    <div class="ak-min-w-0">
+      <div class="ak-stat-label">{{.label}}</div>
+      <div class="ak-stat-value{{with .tone}} is-{{.}}{{end}}"{{with .id}} id="{{.}}"{{end}}>{{.value}}{{with .unit}} <small>{{.}}</small>{{end}}</div>
+      {{if or .sub .id}}<div class="ak-stat-sub"{{with .id}} id="{{.}}-sub"{{end}}>{{.sub}}</div>{{end}}
+    </div>
+    {{with .icon}}<span class="ak-stat-icon">{{icon .}}</span>{{end}}
+  </div>
+</div>
+{{end}}

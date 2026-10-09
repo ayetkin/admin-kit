@@ -1,4 +1,5 @@
 @tabler/core          1.4.0
 @tabler/icons-webfont 3.45.0
+@tabler/icons         3.45.0 (SVG paths, in icons/tabler-icons.json.gz)
 
 Both MIT licensed. Fetched by scripts/vendor-tabler.sh; do not edit by hand.

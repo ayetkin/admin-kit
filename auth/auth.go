@@ -332,7 +332,7 @@ func (a *Auth) do(req *http.Request, what string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%s endpoint status %d: %s", what, resp.StatusCode, truncate(string(body), 200))

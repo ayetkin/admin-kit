@@ -20,6 +20,60 @@
   z-index: 1090;
 }
 
+/* A toast stands out from whatever it opens over: Tabler draws it in the
+   card colour with a hairline border, so over a card it all but disappears.
+   Here it is a lifted sheet tinted with its kind's colour, a bar of that
+   colour down its left edge, a filled icon badge and a deep shadow. */
+.ak-toast {
+  --ak-toast: var(--tblr-info);
+  --tblr-toast-max-width: 380px;
+  --tblr-toast-font-size: 0.875rem;
+  overflow: hidden;
+  color: var(--tblr-body-color);
+  background-color: var(--tblr-bg-surface);
+  background-color: color-mix(in srgb, var(--ak-toast) 8%, var(--tblr-bg-surface));
+  border: 1px solid color-mix(in srgb, var(--ak-toast) 40%, var(--tblr-border-color));
+  box-shadow: inset 4px 0 0 var(--ak-toast), 0 0.75rem 2rem rgba(0, 0, 0, 0.18);
+}
+.ak-toast + .ak-toast {
+  margin-top: 0.6rem;
+}
+.ak-toast-success { --ak-toast: var(--tblr-success); }
+.ak-toast-danger  { --ak-toast: var(--tblr-danger); }
+.ak-toast-warning { --ak-toast: var(--tblr-warning); }
+.ak-toast-info    { --ak-toast: var(--tblr-info); }
+.ak-toast .toast-body {
+  padding: 0.85rem 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.ak-toast-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin: auto 0 auto 1rem;
+  color: #fff;
+  background: var(--ak-toast);
+  border-radius: 50%;
+}
+/* White on yellow does not read: the warning badge takes a dark glyph. */
+.ak-toast-warning .ak-toast-icon {
+  color: #1f2937;
+}
+.ak-toast-icon .icon {
+  --tblr-icon-size: 1.1rem;
+  width: var(--tblr-icon-size);
+  height: var(--tblr-icon-size);
+}
+[data-bs-theme="dark"] .ak-toast {
+  background-color: #323d4c; /* fallback for color-mix */
+  background-color: color-mix(in srgb, var(--ak-toast) 14%, color-mix(in srgb, var(--tblr-bg-surface) 88%, #fff));
+  box-shadow: inset 4px 0 0 var(--ak-toast), 0 1rem 2.5rem rgba(0, 0, 0, 0.6);
+}
+
 /* While a row menu is open, its scrollable table stops clipping so the menu can
    extend past the table's edge. adminkit.js adds and removes the class around
    the dropdown's own show/hidden events. */
@@ -98,4 +152,457 @@
 .ak-num {
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+/* Ghost buttons in dark mode: Tabler fills one with its full colour on hover,
+   a bright block on a dark page. A faint tint of the same colour says the
+   same thing; a secondary one turns to body text so it reads as active. */
+[data-bs-theme="dark"] [class*="btn-ghost-"] {
+  --tblr-btn-hover-color: var(--tblr-btn-color);
+  --tblr-btn-hover-bg: color-mix(in srgb, var(--tblr-btn-color) 16%, transparent);
+  --tblr-btn-hover-border-color: transparent;
+  --tblr-btn-active-color: var(--tblr-btn-color);
+  --tblr-btn-active-bg: color-mix(in srgb, var(--tblr-btn-color) 24%, transparent);
+  --tblr-btn-active-border-color: transparent;
+}
+
+[data-bs-theme="dark"] .btn-ghost-secondary {
+  --tblr-btn-hover-color: var(--tblr-body-color);
+  --tblr-btn-active-color: var(--tblr-body-color);
+}
+
+/* Status colours as text in light mode: Tabler tunes green, yellow and orange
+   for fills, and as text on white they fall short of a readable contrast.
+   Text gets darker steps of the same hues; fills and dark mode keep Tabler's. */
+[data-bs-theme="light"] {
+  --ak-text-green: #1e7b30;
+  --ak-text-yellow: #9a6100;
+  --ak-text-orange: #b54708;
+}
+
+[data-bs-theme="light"] .text-green,
+[data-bs-theme="light"] .text-success,
+[data-bs-theme="light"] .ak-secret {
+  color: var(--ak-text-green) !important;
+}
+
+[data-bs-theme="light"] .text-yellow,
+[data-bs-theme="light"] .text-warning {
+  color: var(--ak-text-yellow) !important;
+}
+
+[data-bs-theme="light"] .text-orange {
+  color: var(--ak-text-orange) !important;
+}
+
+/* A button adminkit.busy holds: a spinner in front of its label, which takes
+   the place of the button's own icon. */
+.btn.ak-busy {
+  cursor: progress;
+}
+
+.btn.ak-busy:disabled {
+  opacity: 0.8;
+}
+
+.btn .ak-spinner {
+  flex: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-width: 2px;
+  margin-right: 0.5rem;
+}
+
+.btn.ak-busy .ak-spinner + .icon,
+.btn.ak-busy .ak-spinner + .ti {
+  display: none;
+}
+
+.btn-icon.ak-busy .ak-spinner {
+  margin: 0;
+}
+
+/* The confirm dialog can open over another dialog (a form that deletes what it
+   edits): it sits above it. */
+.modal.ak-confirm {
+  z-index: 1065;
+}
+
+/* ===================================================================
+   Components every panel ended up writing for itself: row actions, stat
+   tiles, list toolbars and pagers, settings rows, identity cells, two-pane
+   dialogs. Each is a few classes over Tabler's own, shown on the example
+   panel's Components page.
+   =================================================================== */
+
+.ak-min-w-0 {
+  min-width: 0;
+}
+
+/* Row actions: compact square icon buttons at the end of a table row. Add
+   .has-label for one with its name beside the icon, .is-danger for one that
+   deletes, .is-current (disabled) for one that marks the current state, such
+   as the default item's star. */
+.ak-actions {
+  display: inline-flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.ak-act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  padding: 0;
+  color: var(--tblr-secondary);
+  background: transparent;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.ak-act .icon {
+  --tblr-icon-size: 1.125rem;
+  margin: 0;
+}
+
+.ak-act.has-label {
+  width: auto;
+  gap: 0.35rem;
+  padding: 0 0.6rem 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.ak-act:hover,
+.ak-act:focus-visible {
+  color: var(--tblr-primary);
+  background: color-mix(in srgb, var(--tblr-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--tblr-primary) 45%, transparent);
+}
+
+.ak-act.is-danger:hover,
+.ak-act.is-danger:focus-visible {
+  color: var(--tblr-danger);
+  background: color-mix(in srgb, var(--tblr-danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--tblr-danger) 45%, transparent);
+}
+
+.ak-act:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.ak-act.is-current:disabled {
+  opacity: 1;
+  color: var(--tblr-yellow);
+  border-color: color-mix(in srgb, var(--tblr-yellow) 40%, transparent);
+}
+
+.ak-act.ak-busy .ak-spinner {
+  margin: 0;
+}
+
+.ak-act.ak-busy .icon {
+  display: none;
+}
+
+/* Stat tile (the "stat" partial): label, figure, context line, and an icon
+   in a tinted square on the right. */
+.ak-stat .card-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ak-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tblr-secondary);
+}
+
+.ak-stat-value {
+  margin-top: 0.25rem;
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.ak-stat-value small {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--tblr-secondary);
+}
+
+.ak-stat-value.is-good { color: var(--tblr-green); }
+.ak-stat-value.is-warn { color: var(--tblr-orange); }
+.ak-stat-value.is-bad { color: var(--tblr-red); }
+[data-bs-theme="light"] .ak-stat-value.is-good { color: var(--ak-text-green); }
+[data-bs-theme="light"] .ak-stat-value.is-warn { color: var(--ak-text-orange); }
+
+.ak-stat-sub {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--tblr-secondary);
+}
+
+.ak-stat-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-left: auto;
+  color: var(--tblr-primary);
+  background: color-mix(in srgb, var(--tblr-primary) 12%, transparent);
+  border-radius: var(--tblr-border-radius);
+}
+
+/* List toolbar in a card header: a search box on the left, filter buttons
+   (a .btn-group of .btn-check radios with counts) on the right. */
+.ak-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ak-toolbar .input-icon {
+  flex: 1 1 16rem;
+  max-width: 24rem;
+}
+
+.ak-toolbar .ak-filter {
+  margin-left: auto;
+}
+
+.ak-filter .btn {
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.ak-filter .badge {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pager (the "pager" partial): the range on the left, previous / page / next
+   as square outlined buttons on the right. */
+.ak-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8125rem;
+}
+
+.ak-pagebtns {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ak-pager-page {
+  min-width: 3.5rem;
+  text-align: center;
+  color: var(--tblr-secondary);
+}
+
+.ak-pagebtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  padding: 0;
+  color: var(--tblr-body-color);
+  background: var(--tblr-bg-surface);
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius);
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+
+.ak-pagebtn .icon {
+  --tblr-icon-size: 1rem;
+  margin: 0;
+}
+
+.ak-pagebtn:hover:not(:disabled) {
+  color: var(--tblr-primary);
+  background: color-mix(in srgb, var(--tblr-primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--tblr-primary) 50%, transparent);
+}
+
+.ak-pagebtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Settings page: groups of rows, one setting per row, its name and what it
+   does on the left and the control on the right (stacked on a phone). The
+   save bar stays at the foot of the screen while the form scrolls. */
+.ak-setting-group {
+  padding: 1.25rem 1.25rem 0.25rem;
+}
+
+.ak-setting-group + .ak-setting-group {
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+.ak-srow {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 0.5rem 1.5rem;
+  align-items: start;
+  padding: 0.9rem 0;
+}
+
+.ak-srow + .ak-srow {
+  border-top: 1px dashed var(--tblr-border-color);
+}
+
+.ak-srow-label label {
+  display: block;
+  font-weight: 600;
+}
+
+.ak-srow-desc {
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--tblr-secondary);
+}
+
+.ak-srow-ctl.is-narrow > * {
+  max-width: 10rem;
+}
+
+.ak-srow-ctl.is-switch {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ak-srow-ctl.is-switch .form-check {
+  min-height: 0;
+  padding-left: 0;
+}
+
+.ak-srow-ctl.is-switch .form-check-input {
+  width: 2.5rem;
+  height: 1.35rem;
+  margin: 0;
+}
+
+@media (max-width: 767.98px) {
+  .ak-srow { grid-template-columns: 1fr; }
+  .ak-srow-ctl.is-switch { justify-content: flex-start; }
+  .ak-srow-ctl.is-narrow > * { max-width: none; }
+}
+
+.ak-savebar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--tblr-bg-surface);
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+/* Identity cell (the "ident" partial): avatar, then name over a muted line.
+   A logo is shown whole, not cropped to the circle. */
+.ak-ident {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ak-ident .avatar {
+  --tblr-avatar-size: 2.25rem;
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.ak-ident-name {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ak-ident-sub {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  color: var(--tblr-secondary);
+}
+
+/* Two-pane dialog: the form on the dialog surface and a helper pane beside it
+   on the page colour (under it on a narrow screen). Put .ak-split in a
+   .modal-body.p-0; .ak-side-first puts the helper on the left. */
+.ak-split {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.ak-pane {
+  min-width: 0;
+  padding: 1.5rem;
+}
+
+.ak-side {
+  background: var(--tblr-body-bg);
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+@media (min-width: 992px) {
+  .ak-split { grid-template-columns: minmax(0, 1fr) 22rem; }
+  .ak-split.ak-side-first { grid-template-columns: 22rem minmax(0, 1fr); }
+  .ak-side { border-top: 0; border-left: 1px solid var(--tblr-border-color); }
+  .ak-side-first .ak-side { border-left: 0; border-right: 1px solid var(--tblr-border-color); }
+}
+
+/* Section heading inside a pane or a long form: small caps and a rule. */
+.ak-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tblr-secondary);
+}
+
+.ak-section .icon {
+  --tblr-icon-size: 1rem;
+}
+
+.ak-section::after {
+  flex: 1;
+  height: 1px;
+  content: "";
+  background: var(--tblr-border-color);
+}
+
+/* A value to copy: monospace in a read-only field, with a data-ak-copy
+   button in the same input group. */
+.ak-copyfield .form-control {
+  font-family: var(--tblr-font-monospace);
+  font-size: 0.8125rem;
+}
+
+.ak-copyfield .btn .icon {
+  margin: 0;
 }

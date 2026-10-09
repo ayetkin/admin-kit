@@ -51,10 +51,39 @@ if n != 1:
 open(path, "w", encoding="utf-8").write(new)
 PY
 
+# The icons as SVG paths, for the `icon` template function: inline SVG stays
+# sharp at any size, the icon font only at its 24px grid. Every outline icon
+# and every filled one (as "<name>-filled") goes into one gzipped JSON map of
+# name to the SVG's inner markup, so the binary carries one small file.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+fetch "https://registry.npmjs.org/@tabler/icons/-/icons-$ICONS_VERSION.tgz" "$tmp/icons.tgz"
+tar xzf "$tmp/icons.tgz" -C "$tmp"
+python3 - "$tmp/package/icons" icons/tabler-icons.json.gz <<'PY'
+import gzip, json, os, re, sys
+root, out = sys.argv[1], sys.argv[2]
+icons = {}
+for kind, suffix in (("outline", ""), ("filled", "-filled")):
+    for f in os.listdir(os.path.join(root, kind)):
+        if not f.endswith(".svg"):
+            continue
+        svg = open(os.path.join(root, kind, f), encoding="utf-8").read()
+        body = re.sub(r"(?s)^.*?<svg[^>]*>", "", svg)
+        body = re.sub(r"(?s)</svg>\s*$", "", body)
+        body = re.sub(r'<path stroke="none" d="M0 0h24v24H0z" fill="none"\s*/>', "", body)
+        body = re.sub(r"\s*/>", "/>", re.sub(r">\s+<", "><", body)).strip()
+        icons[f[:-4] + suffix] = body
+os.makedirs(os.path.dirname(out), exist_ok=True)
+data = json.dumps(icons, separators=(",", ":"), sort_keys=True).encode()
+open(out, "wb").write(gzip.compress(data, 9, mtime=0))
+print("  %s: %d icons" % (out, len(icons)))
+PY
+
 # Record what is vendored, so the versions are visible without reading git log.
 cat > "$DEST/VERSION" <<EOF
 @tabler/core          $CORE_VERSION
 @tabler/icons-webfont $ICONS_VERSION
+@tabler/icons         $ICONS_VERSION (SVG paths, in icons/tabler-icons.json.gz)
 
 Both MIT licensed. Fetched by scripts/vendor-tabler.sh; do not edit by hand.
 EOF

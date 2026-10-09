@@ -3,11 +3,14 @@ package adminkit
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
 	"io/fs"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -21,9 +24,10 @@ var kitTemplates embed.FS
 //go:embed assets
 var assetsFS embed.FS
 
-// assetMaxAge is how long a browser may cache an asset. The files are immutable
-// for a given binary, but a redeploy replaces them under the same URL, so this
-// stays short enough that an upgrade is picked up promptly.
+// assetMaxAge is how long a browser may cache an asset. The pages link each one
+// with a version of its content (see assetVersion), so an upgrade changes the
+// URL; a file linked without one, such as the icon font from its stylesheet,
+// still picks up a change within this time.
 const assetMaxAge = time.Hour
 
 // Mount registers the kit's static assets under Config.AssetPath (default
@@ -159,3 +163,36 @@ func qValue(params string) float64 {
 	}
 	return 1
 }
+
+// assetVersion is a "?v=" query naming the content of an embedded asset, so
+// its URL changes whenever a kit upgrade changes the file: the browser's
+// cached copy (see assetMaxAge) is then never served in its place. Empty for
+// a name the kit does not embed.
+func assetVersion(name string) string {
+	v, ok := assetVersions()[name]
+	if !ok {
+		return ""
+	}
+	return "?v=" + v
+}
+
+var assetVersions = sync.OnceValue(func() map[string]string {
+	out := map[string]string{}
+	sub, err := fs.Sub(assetsFS, "assets")
+	if err != nil {
+		return out
+	}
+	_ = fs.WalkDir(sub, ".", func(name string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
+		}
+		raw, err := fs.ReadFile(sub, name)
+		if err != nil {
+			return nil
+		}
+		sum := sha256.Sum256(raw)
+		out[name] = hex.EncodeToString(sum[:4])
+		return nil
+	})
+	return out
+})

@@ -180,3 +180,18 @@ func TestPrecompressSkipsIncompressibleFiles(t *testing.T) {
 		t.Error("b.woff2 should have been left alone")
 	}
 }
+
+// The layout links each kit asset with a version of its content, so a kit
+// upgrade is never hidden behind a browser's cached copy.
+func TestAssetLinksCarryAContentVersion(t *testing.T) {
+	v := assetVersion("adminkit.js")
+	if len(v) != len("?v=")+8 || !strings.HasPrefix(v, "?v=") {
+		t.Fatalf("assetVersion(adminkit.js) = %q", v)
+	}
+	if assetVersion("adminkit.css") == v {
+		t.Error("two different files share a version")
+	}
+	if got := assetVersion("no-such-file.js"); got != "" {
+		t.Errorf("unknown asset got a version: %q", got)
+	}
+}

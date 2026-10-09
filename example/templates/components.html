@@ -57,10 +57,87 @@
     <div class="card">
       <div class="card-header"><h3 class="card-title">Confirm before acting</h3></div>
       <div class="card-body">
-        <p class="text-secondary"><code>data-ak-confirm="Are you sure?"</code> on any clickable element.</p>
-        <button class="btn btn-ghost-danger" data-ak-confirm="Delete everything?" data-toast="danger">
-          {{icon "trash"}}<span class="ms-1">Destructive action</span>
-        </button>
+        <p class="text-secondary">
+          <code>data-ak-confirm="Are you sure?"</code> on any clickable element asks in a dialog first.
+          <code>data-ak-confirm-ok</code> labels its button (by default the element's own text or tooltip),
+          <code>data-ak-confirm-tone="primary"</code> marks an action that is not destructive.
+          From script: <code>adminkit.confirm(message, {ok, tone}).then(yes =&gt; …)</code>.
+        </p>
+        <div class="btn-list">
+          <button class="btn btn-ghost-danger" data-ak-confirm="Delete everything? This cannot be undone." data-toast="danger">
+            {{icon "trash"}}<span class="ms-1">Delete everything</span>
+          </button>
+          <button class="btn" data-ak-confirm="Send the report to the team now?" data-ak-confirm-ok="Send" data-ak-confirm-tone="primary" data-toast="success">
+            {{icon "send"}}<span class="ms-1">Send report</span>
+          </button>
+          <button class="btn btn-icon btn-ghost-danger" title="Revoke key" data-bs-toggle="tooltip" data-ak-confirm="Revoke this key?" data-toast="warning">
+            {{icon "key-off"}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Busy button</h3></div>
+      <div class="card-body">
+        <p class="text-secondary">
+          <code>adminkit.busy(button, promise)</code> holds the button with a spinner until the promise settles,
+          and passes its outcome on. <code>adminkit.idle(button)</code> releases one early.
+        </p>
+        <div class="btn-list">
+          <button class="btn btn-primary" data-busy="ok">{{icon "device-floppy"}}<span>Save</span></button>
+          <button class="btn" data-busy="fail">{{icon "refresh"}}<span>Refresh, fails</span></button>
+          <button class="btn btn-icon" data-busy="ok" title="Sync" data-bs-toggle="tooltip">{{icon "refresh"}}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Icons &amp; tooltips</h3></div>
+      <div class="card-body">
+        <p class="text-secondary">
+          <code>{{`{{icon "name"}}`}}</code> draws inline SVG, sharp at every size; <code>"name-filled"</code> picks the filled set.
+          Size it with <code>--tblr-icon-size</code> or Tabler's <code>.icon-sm</code>, <code>.icon-md</code>, <code>.icon-lg</code>.
+        </p>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <span style="--tblr-icon-size: 1rem">{{icon "star"}}</span>
+          {{icon "star"}}
+          <span style="--tblr-icon-size: 1.75rem">{{icon "star"}}</span>
+          <span class="text-yellow" style="--tblr-icon-size: 1.75rem">{{icon "star-filled"}}</span>
+        </div>
+        <p class="text-secondary">
+          <code>data-bs-toggle="tooltip"</code> works on content added later too, and a tooltip leaves with its element.
+        </p>
+        <div class="btn-list">
+          <button class="btn" id="add-tip">{{icon "plus"}}<span>Add a button with a tooltip</span></button>
+          <span id="tip-host"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Theme</h3></div>
+      <div class="card-body">
+        <p class="text-secondary">
+          Ghost buttons tint on hover in dark mode rather than fill. In light mode, green, yellow and orange text
+          are darker steps of the same hues, so they read on white.
+        </p>
+        <div class="btn-list mb-3">
+          <button class="btn btn-ghost-secondary">{{icon "settings"}}<span>Secondary</span></button>
+          <button class="btn btn-ghost-primary">{{icon "edit"}}<span>Primary</span></button>
+          <button class="btn btn-ghost-danger">{{icon "trash"}}<span>Danger</span></button>
+        </div>
+        <div class="d-flex gap-3">
+          <span class="text-green">{{icon "circle-check"}} Healthy</span>
+          <span class="text-yellow">{{icon "alert-circle"}} Slow</span>
+          <span class="text-orange">{{icon "alert-triangle"}} Idle</span>
+        </div>
       </div>
     </div>
   </div>
@@ -110,6 +187,21 @@
     if (r) {
       var url = '/admin/demo' + (r.dataset.req === 'fail' ? '?fail=1' : '')
       adminkit.post(url, { demo: true }, 'The server accepted it')
+    }
+    var b = e.target.closest('[data-busy]')
+    if (b) {
+      var slow = '/admin/demo?slow=1' + (b.dataset.busy === 'fail' ? '&fail=1' : '')
+      adminkit.busy(b, adminkit.post(slow, { demo: true }, 'Done'))
+    }
+    if (e.target.closest('#add-tip')) {
+      var host = document.getElementById('tip-host')
+      host.innerHTML = ''
+      var btn = document.createElement('button')
+      btn.className = 'btn btn-ghost-secondary'
+      btn.setAttribute('data-bs-toggle', 'tooltip')
+      btn.title = 'Added at ' + new Date().toLocaleTimeString()
+      btn.textContent = 'Hover me'
+      host.appendChild(btn)
     }
   })
 </script>

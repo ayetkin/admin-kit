@@ -103,18 +103,40 @@ project's own database to survive restarts and run more than one replica.
 | Usage meter (budget fill bar) | `{{template "meter" dict "used" .Spent "limit" .Limit}}` |
 | Status pill | `{{template "pill" dict "label" "Session" "state" "ok" "value" "Active"}}` |
 | Empty state | `{{template "empty" dict "title" "No keys yet" "icon" "key"}}` |
-| Icon | `{{icon "key"}}` (any name from [tabler.io/icons](https://tabler.io/icons)) |
+| Icon | `{{icon "key"}}`, `{{icon "star-filled"}}` (any name from [tabler.io/icons](https://tabler.io/icons)), drawn as inline SVG: sharp at every size, sized by Tabler's `.icon` (`--tblr-icon-size`) |
 | Formatting | `{{money .Cost}}` `{{num .Tokens}}` `{{pct .Used .Limit}}` `{{date .At}}` `{{ago .At}}` `{{truncate 20 .Name}}` |
-| Toasts | `adminkit.toast(msg, 'success'\|'danger'\|'warning'\|'info')` |
+| Live age | `{{agoLive .AtMs}}` (Unix milliseconds) renders like `ago` and keeps counting in the browser, with the full date as its tooltip |
+| Stat tile | `{{template "stat" dict "label" "Members" "value" .Count "unit" "total" "sub" "3 new" "icon" "users" "tone" "good"}}`; `tone` is `good`, `warn` or `bad`; with `id` the figure (and `id-sub` line) can be updated from script |
+| Name with logo | `{{template "ident" dict "name" .Name "sub" .Email "logo" .LogoURL}}`, the logo falls back to initials |
+| Pager | `{{template "pager" dict "id" "members-pager"}}`, filled by `adminkit.pager` |
+| Row actions | `.ak-actions` holding `.ak-act` icon buttons (`.has-label`, `.is-danger`, `.is-current`) |
+| List toolbar | `.ak-toolbar` with an `.ak-filter` search box |
+| Settings form | `.ak-setting-group` of `.ak-srow` rows (`.is-narrow`, `.is-switch`) and an `.ak-savebar` |
+| Two-pane dialog | `.ak-split` with an `.ak-side` list beside an `.ak-pane`, split into `.ak-section`s |
+| Copy field | `.ak-copyfield` wraps an input and a `data-ak-copy-target="#id"` button; `data-ak-copy="text"` copies a fixed value; `adminkit.copy(text)` from script |
+| Toasts | `adminkit.toast(msg, 'success'\|'danger'\|'warning'\|'info')`, tinted by kind with an icon badge so they stand out from the page |
+| Filter and page a list | `adminkit.filterRows(rows, query, {page, size, pager})` matches `data-search` (or the row's text) and returns `{page, matched}`; `adminkit.pager(id, {from, size, total, page})`, `adminkit.serverPager(id, {total, page, page_size})` for server-side paging; `adminkit.pageSize(key, fallback)` / `.save(key, n)` remember the choice |
+| Forms | `<form data-ak-form action=... data-ak-ok="Saved">` posts as JSON, marks fields from a 422 `{errors: {field: msg}}`, then fires `ak:sent` (`data-ak-method`, `data-ak-refresh` to refresh after). From script: `adminkit.send(form, {method, url, body, ok})`, `adminkit.formData(form)`, `adminkit.fieldErrors(form, errors)`, `adminkit.clearErrors(form)` |
+| Refresh in place | `adminkit.refresh({delay, background})` swaps every `[data-ak-live]` element (by id) and reruns `script[data-ak-data]`, keeping form input and focus; fires `ak:beforerefresh` and `ak:refresh`. Falls back to a reload that keeps pending toasts |
+| Event helpers | `adminkit.on(type, selector, handler)` delegates from the document; `adminkit.debounce(fn, ms)` |
 | JSON calls | `adminkit.post(url, body, okMessage)` `adminkit.get(url)` `adminkit.del(url, okMessage)` |
 | Modals | `adminkit.modal('dlgId').show()` / `.hide()` |
-| Confirm first | `data-ak-confirm="Revoke this key?"` on any clickable element |
+| Confirm first | `data-ak-confirm="Revoke this key?"` on any clickable element asks in a dialog; `data-ak-confirm-ok="Revoke"` labels its button, `data-ak-confirm-tone="primary"` for an action that is not destructive. From script: `adminkit.confirm(message, {ok, tone})` resolves to true or false |
+| Busy button | `adminkit.busy(btn, promise)` disables the button with a spinner until the promise settles; `adminkit.idle(btn)` releases it early |
+| Tooltips | `data-bs-toggle="tooltip"` works on content added after load, and a tooltip goes away with its element |
+| Theme fixes | Ghost buttons tint on hover in dark mode instead of filling; green, yellow and orange text are darker in light mode, so they read on white |
 
 Note on the Bootstrap global: Tabler's bundle publishes its components on
 `window.tabler`, not `window.bootstrap`, so `new bootstrap.Modal(el)` copied
 from the docs would throw. The kit resolves whichever namespace is present and
 publishes it as `bootstrap`, so documentation snippets work verbatim.
 `adminkit.modal()` is the shorter way to the same thing.
+
+The example panel's Patterns page puts these together: stat tiles, a filtered
+and paged list with row actions, a settings form and a two-pane dialog.
+
+Asset links carry a content hash (`?v=...`), so a browser picks up new kit CSS
+and JavaScript as soon as a panel ships a new version.
 
 Everything else - cards, tables, modals, forms, badges, dropdowns - is Tabler's,
 used exactly as its documentation shows.
