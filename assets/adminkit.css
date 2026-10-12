@@ -606,3 +606,16 @@
 .ak-copyfield .btn .icon {
   margin: 0;
 }
+
+/* Theme switcher: the navbar shows the operator's choice (data-ak-theme, set
+   by adminkit-theme.js), and the menu marks it. */
+.ak-theme-btn > span { display: none; }
+[data-ak-theme="light"] .ak-theme-btn > .ak-theme-light,
+[data-ak-theme="dark"] .ak-theme-btn > .ak-theme-dark,
+[data-ak-theme="system"] .ak-theme-btn > .ak-theme-system { display: inline-flex; }
+[data-ak-theme="light"] .dropdown-item[data-ak-theme="light"],
+[data-ak-theme="dark"] .dropdown-item[data-ak-theme="dark"],
+[data-ak-theme="system"] .dropdown-item[data-ak-theme="system"] {
+  color: var(--tblr-primary);
+  font-weight: var(--tblr-font-weight-medium);
+}

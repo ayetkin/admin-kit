@@ -154,7 +154,8 @@ Then run `make run`, check the example panel, and commit the result. Tabler's
 own `tabler-theme.js` is not vendored: it treats light as the default and strips
 `data-bs-theme` whenever the resolved theme matches it, which would undo the
 server-rendered `Config.Theme` on a first visit. `assets/adminkit-theme.js`
-replaces it and honours the server value.
+replaces it and honours the server value. It also adds a "system" choice
+that follows the OS colour scheme, live.
 
 ## Versioning
 

@@ -45,8 +45,9 @@ type Config struct {
 	// (default "/adminkit"). Change it only on a path collision.
 	AssetPath string
 
-	// Theme is "dark" (default) or "light". Operators can flip it at runtime
-	// from the navbar; this is the initial value.
+	// Theme is "dark" (default), "light" or "system" (follows the OS).
+	// Operators can flip it at runtime from the navbar; this is the initial
+	// value.
 	Theme string
 
 	// Logger receives render failures, which are reported to the browser as a
@@ -88,7 +89,7 @@ func (c Config) withDefaults() Config {
 	for len(c.AssetPath) > 1 && c.AssetPath[len(c.AssetPath)-1] == '/' {
 		c.AssetPath = c.AssetPath[:len(c.AssetPath)-1]
 	}
-	if c.Theme != "light" {
+	if c.Theme != "light" && c.Theme != "system" {
 		c.Theme = "dark"
 	}
 	if c.Logger == nil {
