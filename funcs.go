@@ -19,6 +19,8 @@ func builtinFuncs(cfg Config) template.FuncMap {
 			name = strings.TrimPrefix(name, "/")
 			return cfg.AssetPath + "/" + name + assetVersion(name)
 		},
+		// favicon is trusted panel config, so a data: URL must not be sanitised away.
+		"favicon":    func() template.URL { return template.URL(cfg.Favicon) },
 		"date":       formatDate,
 		"datetime":   formatDateTime,
 		"ago":        formatAgo,

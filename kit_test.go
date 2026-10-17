@@ -175,3 +175,21 @@ func TestPageHandlerRendersWithRequestData(t *testing.T) {
 		t.Errorf("handler did not pass request data through: %s", rec.Body.String())
 	}
 }
+
+// A panel's favicon reaches both the layout and the sign-in page unsanitised
+// (a data: URL would otherwise become "#ZgotmplZ"); unset keeps the sparkle.
+func TestFaviconIsConfigurable(t *testing.T) {
+	const icon = "data:image/png;base64,iVBORw0KGgo="
+	k := newTestKit(t, Config{Favicon: icon})
+	if body := get(t, k, "/admin/keys", "keys.html", nil); !strings.Contains(body, `<link rel="icon" href="`+icon+`">`) {
+		t.Errorf("layout is missing the configured favicon: %s", body)
+	}
+	rec := httptest.NewRecorder()
+	k.RenderLogin(rec, httptest.NewRequest(http.MethodGet, "/admin/login", nil), LoginData{})
+	if !strings.Contains(rec.Body.String(), `<link rel="icon" href="`+icon+`">`) {
+		t.Errorf("sign-in page is missing the configured favicon: %s", rec.Body.String())
+	}
+	if body := get(t, newTestKit(t, Config{}), "/admin/keys", "keys.html", nil); !strings.Contains(body, "%e2%9c%a8") { // ✨, percent-encoded by html/template
+		t.Errorf("default favicon lost its sparkle: %s", body)
+	}
+}

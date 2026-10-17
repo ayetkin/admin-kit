@@ -50,6 +50,10 @@ type Config struct {
 	// value.
 	Theme string
 
+	// Favicon is the browser-tab icon's URL, used as-is in <link rel="icon">:
+	// a path the panel serves or a data: URL. Empty keeps the kit's sparkle.
+	Favicon string
+
 	// Logger receives render failures, which are reported to the browser as a
 	// bare 500 so template internals never reach it. Defaults to discarding.
 	Logger *slog.Logger
@@ -74,6 +78,9 @@ type User struct {
 	Picture string // avatar URL; initials are drawn when empty
 }
 
+// defaultFavicon is the sparkle every panel shows until it sets its own.
+const defaultFavicon = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>✨</text></svg>"
+
 // withDefaults returns c with every optional field filled in.
 func (c Config) withDefaults() Config {
 	if c.BrandHref == "" {
@@ -91,6 +98,9 @@ func (c Config) withDefaults() Config {
 	}
 	if c.Theme != "light" && c.Theme != "system" {
 		c.Theme = "dark"
+	}
+	if c.Favicon == "" {
+		c.Favicon = defaultFavicon
 	}
 	if c.Logger == nil {
 		c.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
